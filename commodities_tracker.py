@@ -20,20 +20,20 @@ commodities = {
 }
 
 st.title("📈 Commodity Tracker")
+commodity = st.selectbox('Select a commodity to explore:', ['Natural Gas'])
 
 selected_range = st.selectbox('Select time range:', list(time_ranges.keys()), index=1)
 days_back = time_ranges[selected_range]
 cutoff_date = datetime.today() - timedelta(days=days_back)
 
-for name, filename in commodities.items():
+if commodity == 'Natural Gas':
+    st.subheader('📊 Price Overview')
 
     # Download data
-    df = pd.read_csv(f"data/{filename}", index_col="Date", parse_dates=True)
+    df = pd.read_csv(f"data/Natural_Gas.csv", index_col="Date", parse_dates=True)
     df = df[df.index >= cutoff_date]
-    st.subheader(f"{name}")
     latest = df.iloc[-1]
     st.metric("Price", f"${latest['Close']:.2f}", f"{latest['% Change']:.2f}%")
-    st.write(f"Volume: {int(latest['Volume'])}")
 
     # Plot
     fig, ax = plt.subplots()
@@ -41,3 +41,14 @@ for name, filename in commodities.items():
     df['7d MA'].plot(ax=ax, linestyle='--', label='7d MA')
     ax.legend()
     st.pyplot(fig)
+
+    tabs = st.tabs(["📦 Storage Levels"])#, "🔁 Imports & Exports", "🌦 Weather & Seasonality", "📰 News & Events"])
+    with tabs[0]:
+        st.subheader("EIA Storage")
+        try:
+            eia_df = pd.read_csv("data/eia_storage.csv", parse_dates=["period"], index_col=0)
+            eia_df = eia_df[eia_df["period"] >= cutoff_date]
+            st.line_chart(eia_df.set_index("period")["value"])
+            st.dataframe(eia_df.tail())
+        except FileNotFoundError:
+            st.warning("Storage data not found. Please run the EIA data update script.")

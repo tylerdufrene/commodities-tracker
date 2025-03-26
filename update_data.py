@@ -2,6 +2,7 @@
 import yfinance as yf
 import pandas as pd
 from datetime import datetime
+import eia_storage_data as eia
 
 commodities = {
     "Natural Gas": "NG=F",
@@ -15,3 +16,6 @@ for name, ticker in commodities.items():
     fname = f"data/{name.replace(' ', '_')}.csv"
     df.to_csv(fname)
     print(f"Updated: {fname}")
+
+eia.main() ## Call EIA storage data and update csv file
+print('EIA Storage Data Updated')
